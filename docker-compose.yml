@@ -1,18 +1,59 @@
 version: "3.8"
 
 services:
-  compute:
+  executor:
     build:
       context: .
-    hostname: "dev"
-    ports:
-      - 8888:8888
+      args:
+        VARIANT: "3.11-bullseye"
+        POETRY_EVERSION: "1.8.3"
+    hostname: "executor"
     volumes:
       - .:/app
+      - ${HOME}/.ssh:/home/vscode/.ssh
     environment:
-      - PATH=/root/.local/bin:$PATH
+      PYTHONPATH: /app
+    env_file: .env
     working_dir: /app
-    command: poetry run jupyter notebook
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        .devcontainer/postCreate.sh
+        sleep infinity
+    restart: always
+    privileged: true
+    ipc: host
+    tty: true
+    depends_on:
+      - langserve
+
+  langserve:
+    build:
+      context: .
+      args:
+        VARIANT: "3.11-bullseye"
+        POETRY_EVERSION: "1.8.3"
+    hostname: "langserve"
+    ports:
+      - 8000:8000
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8000/docs"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    volumes:
+      - .:/app
+      - ${HOME}/.ssh:/home/vscode/.ssh
+    environment:
+      PYTHONPATH: /app
+    env_file: .env
+    working_dir: /app
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        .devcontainer/postCreate.sh
+        scripts/1_1_serve.sh
     restart: always
     privileged: true
     ipc: host
