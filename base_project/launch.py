@@ -1,4 +1,4 @@
-from base_project.core import D
+from base_project.core.depth_logging import D
 
 
 @D

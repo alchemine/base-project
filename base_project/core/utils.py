@@ -3,11 +3,13 @@
 Commonly used functions and classes are here.
 """
 
-from itertools import starmap
 from datetime import datetime
+from itertools import starmap
 
+import yaml
 import numpy as np
 import tabulate
+from easydict import EasyDict
 from dask import delayed, compute
 
 
@@ -98,3 +100,33 @@ class MetaSingleton(type):
         if cls not in cls._instances:
             cls._instances[cls] = super(MetaSingleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
+
+
+############################################################
+# Singleton manager
+############################################################
+class SingletonManager:
+    """Singleton manager
+    This class assures that only one instance is created.
+
+    Attributes:
+        instance: Singleton instance
+    """
+
+    def __new__(cls):
+        if not hasattr(cls, "instance"):
+            cls.instance = super(SingletonManager, cls).__new__(cls)
+        return cls.instance
+
+
+############################################################
+# File managing
+############################################################
+def load_yaml(path: str) -> EasyDict:
+    """Load yaml file."""
+    with open(path, "r") as f:
+        config = yaml.safe_load(f)
+    return EasyDict(config)
+
+
+SINGLETON_MANAGER = SingletonManager()
