@@ -7,4 +7,3 @@ class BaseRequest(BaseModel):
 
 class BaseResponse(BaseModel):
     success: bool
-    error_message: str | None = None
