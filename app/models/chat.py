@@ -29,9 +29,13 @@ class ChatResponse(BaseResponse):
             "examples": [
                 {
                     "success": True,
-                    "error_message": None,
                     "data": {"message": "무엇을 도와드릴까요?"},
+                },
+                {
+                    "success": False,
+                    "data": {"message": "에러가 발생했습니다.", "error": "..."},
                 }
+
             ]
         }
     }
