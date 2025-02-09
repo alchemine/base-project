@@ -4,8 +4,10 @@
   "name": "Existing Dockerfile",
   "build": {
     "context": "..",
-    "dockerfile": "../Dockerfile"
+    "dockerfile": "../docker/Dockerfile"
   },
+
+  // Configure tool-specific properties.
   "customizations": {
     "vscode": {
       "extensions": [
@@ -14,9 +16,10 @@
         "GitHub.vscode-pull-request-github",
         "esbenp.prettier-vscode",
         "ms-python.black-formatter",
-        "GitHub.copilot",
         "donjayamanne.githistory",
-        "eamodio.gitlens"
+        "eamodio.gitlens",
+        "ms-toolsai.datawrangler",
+        "ms-vscode.live-server"
       ],
       "settings": {
         "terminal.integrated.defaultProfile.linux": "bash",
@@ -32,6 +35,7 @@
         "files.exclude": {
           "**/__pycache__": true
         },
+        "python.analysis.extraPaths": [],
         "python.testing.pytestEnabled": true,
         "python.testing.pytestArgs": ["-s", "-vv", "tests"],
         "terminal.integrated.env.osx": { "PYTHONPATH": "${workspaceFolder}" },
@@ -43,20 +47,32 @@
     }
   },
 
+  // Features to add to the dev container. More info: https://containers.dev/features.
+  "features": {
+    "ghcr.io/devcontainers/features/sshd:1": {},
+    "ghcr.io/guiyomh/features/vim:0": {},
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": false,
+      "upgradePackages": false
+    }
+  },
+
+  "remoteUser": "appuser",
+  "updateRemoteUserUID": true,
+  "runArgs": [
+    "--hostname=dev",
+    "--env-file=.env",
+    "--gpus=all"
+  ],
+  
   "mounts": [
     "source=${localEnv:HOME}/.ssh,target=/home/appuser/.ssh,type=bind"
   ],
-  "workspaceMount": "source=${localWorkspaceFolder},target=/app,type=bind",
-  "workspaceFolder": "/app",
-  "remoteUser": "appuser",
-  "updateRemoteUserUID": true,
+  "workspaceMount": "source=${localWorkspaceFolder},target=/app,type=bind,consistency=cached",
+  "workspaceFolder": "/app"
 
-  "containerEnv": {
-    "ENV": "local"
-  },
-  "postCreateCommand": "bash .devcontainer/postCreate.sh",
-  "features": {
-    "ghcr.io/devcontainers/features/sshd:1": {},
-    "ghcr.io/devcontainers/features/git:1": {}
-  }
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  // "forwardPorts": [8000],
+  // "containerEnv": { "ENV": "dev" },
+  // "postCreateCommand": "bash .devcontainer/postCreate.sh",
 }

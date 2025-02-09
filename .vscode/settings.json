@@ -12,18 +12,19 @@
   "files.exclude": {
     "**/__pycache__": true
   },
+  "python.analysis.extraPaths": [],
   "python.testing.pytestEnabled": true,
   "python.testing.pytestArgs": ["-s", "-vv", "tests"],
   "terminal.integrated.env.osx": {
     "PYTHONPATH": "${workspaceFolder}",
-    "ENV": "local"
+    "ENV": "dev"
   },
   "terminal.integrated.env.linux": {
     "PYTHONPATH": "${workspaceFolder}",
-    "ENV": "local"
+    "ENV": "dev"
   },
   "terminal.integrated.env.windows": {
     "PYTHONPATH": "${workspaceFolder}",
-    "ENV": "local"
+    "ENV": "dev"
   }
 }
