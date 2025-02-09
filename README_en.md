@@ -16,7 +16,7 @@
 
 ## 2. 코어 유틸리티
 
-`src/core/` 디렉토리에는 개발 생산성을 높이기 위한 여러 유틸리티 모듈이 포함되어 있습니다.
+`src/common/` 디렉토리에는 개발 생산성을 높이기 위한 여러 유틸리티 모듈이 포함되어 있습니다.
 
 ### 2.1 Timer
 
@@ -25,7 +25,7 @@
 1. **Context manager**
 
    ```python
-   from src.core import Timer
+   from src.common import Timer
 
    with Timer("Task 1"):
        # Here is code snippet
@@ -41,7 +41,7 @@
 2. **Decorator**
 
    ```python
-   from src.core import Timer, T
+   from src.common import Timer, T
 
    @Timer("Task 1")
    def fn1():
@@ -67,7 +67,7 @@
 함수 호출 스택을 시각화하고, 실행 시간을 측정하는 기능을 제공합니다.
 
 ```python
-from src.core import D
+from src.common import D
 
 @D
 def main():
@@ -122,8 +122,8 @@ Log는 `logs/YYYY-MM-DD.log` 파일에 저장되어 쉽게 추적하고 디버�
 유틸리티 함수를 이용하면 간편하게 사용할 수 있습니다.
 
 ```python
-from src.core import slog, log_info, log_success, log_error, log_warning, log_api
-from src.core.logger import STYLES
+from src.common import slog, log_info, log_success, log_error, log_warning, log_api
+from src.common.logger import STYLES
 
 log_info("This is an info message.")
 log_success("This is a success message.")
@@ -141,7 +141,7 @@ for style in STYLES:
 Error handling 및 logging을 포함하여 HTTP 요청(`requests.post`)을 안전하게 수행할 수 있습니다.
 
 ```python
-from src.core import safe_post
+from src.common.requests import safe_request
 
 url = "https://httpbin.org/post"
 json = {"key": "value"}

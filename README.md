@@ -16,7 +16,7 @@ To provide a consistent development experience across different platforms, I hav
 
 ## 2. Core Utilities
 
-The `src/core/` directory includes several utility modules to enhance development productivity.
+The `src/common/` directory includes several utility modules to enhance development productivity.
 
 ### 2.1 Timer
 
@@ -25,7 +25,7 @@ Provides functionality to measure code execution time.
 1. **Context manager**
 
    ```python
-   from src.core import Timer
+   from src.common import Timer
 
    with Timer("Task 1"):
        # Here is code snippet
@@ -41,7 +41,7 @@ Provides functionality to measure code execution time.
 2. **Decorator**
 
    ```python
-   from src.core import Timer, T
+   from src.common import Timer, T
 
    @Timer("Task 1")
    def fn1():
@@ -67,7 +67,7 @@ Provides functionality to measure code execution time.
 Provides functionality to visualize the function call stack and measure execution time.
 
 ```python
-from src.core import D
+from src.common import D
 
 @D
 def main():
@@ -122,8 +122,8 @@ Logs are saved in the `logs/YYYY-MM-DD.log` file for easy tracking and debugging
 Utility functions allow for easy use.
 
 ```python
-from src.core import slog, log_info, log_success, log_error, log_warning, log_api
-from src.core.logger import STYLES
+from src.common import slog, log_info, log_success, log_error, log_warning, log_api
+from src.common.logger import STYLES
 
 log_info("This is an info message.")
 log_success("This is a success message.")
@@ -141,7 +141,7 @@ for style in STYLES:
 Allows for safe HTTP requests (`requests.post`) including error handling and logging.
 
 ```python
-from src.core import safe_post
+from src.common.requests import safe_request
 
 url = "https://httpbin.org/post"
 json = {"key": "value"}
