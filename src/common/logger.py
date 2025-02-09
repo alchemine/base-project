@@ -38,7 +38,9 @@ STYLES = {
     "OKCYAN": "\033[96m",
 }
 
-LOG_FORMAT = "%(asctime)s | %(levelname)-8s | %(message)s"
+# With name version (for debugging)
+LOG_FORMAT = "%(asctime)s | %(name)-12s | %(levelname)-8s | %(message)s"
+# LOG_FORMAT = "%(asctime)s | %(levelname)-8s | %(message)s"
 LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 
@@ -46,6 +48,14 @@ class ANSIColorRemovingFormatter(logging.Formatter):
     def format(self, record):
         formatted = super().format(record)
         return re.sub(r"\x1b\[[0-9;]*m", "", formatted)
+
+
+class TqdmLogger:
+    def write(self, message: str):
+        log_info(message.lstrip("\r\n"))
+
+    def flush(self):
+        pass
 
 
 def setup_advanced_logger(
@@ -82,6 +92,10 @@ def setup_advanced_logger(
     logger = logging.getLogger(logger_name)
     logger.setLevel(getattr(logging, log_level.upper()))
 
+    # 기존 핸들러 제거
+    if logger.hasHandlers():
+        logger.handlers.clear()
+
     # Create formatters
     color_formatter = logging.Formatter(log_format, datefmt=date_format)
     no_color_formatter = ANSIColorRemovingFormatter(log_format, datefmt=date_format)
@@ -107,6 +121,7 @@ def setup_advanced_logger(
             backupCount=file_backup_count,
         )
         file_handler.setFormatter(no_color_formatter)
+        file_handler.flush = lambda: file_handler.stream.flush()
         logger.addHandler(file_handler)
 
     return logger
@@ -127,7 +142,7 @@ def pretty_dict(s: str) -> str:
 
 
 def slog(
-    msg: str, style: str | None = None, level: str = "info", dump: bool = True
+    msg: str, style: str | None = None, level: str = "info", dump: bool = True, **kwargs
 ) -> str:
     """Stylish log message.
 
@@ -147,69 +162,84 @@ def slog(
     except:
         pass
 
-    if ENV != "local":
+    if ENV in ("dev", "prd"):
         stylish_msg = msg
     elif style:
-        stylish_msg = f"{STYLES[style]}{msg}{STYLES['ENDC']}"
+        stylish_msg = f"{STYLES['BOLD']}{STYLES[style]}{msg}{STYLES['ENDC']}"
     else:
         stylish_msg = msg
 
     match level:
         case "info":
-            logger.info(stylish_msg)
+            logger.info(stylish_msg, **kwargs)
         case "error":
-            logger.error(stylish_msg)
+            logger.error(stylish_msg, **kwargs)
         case "warning":
-            logger.warning(stylish_msg)
+            logger.warning(stylish_msg, **kwargs)
         case "debug":
-            logger.debug(stylish_msg)
+            logger.debug(stylish_msg, **kwargs)
         case _:
-            print(stylish_msg)
+            print(stylish_msg, **kwargs)
 
     return stylish_msg
 
 
-def log_info(msg: str, dump: bool = True) -> None:
+def log_info(msg: str, dump: bool = True, **kwargs) -> str:
     """Stylish info log.
 
     Args:
         msg (str): The message to log.
         dump (bool): The dump flag. Defaults to True.
     """
-    slog(msg, style="OKBLUE", dump=dump)  # OKCYAN
+    return slog(msg, style="GREEN", dump=dump, **kwargs)
 
 
-def log_success(msg: str, dump: bool = True) -> None:
+def log_success(msg: str, dump: bool = True, prefix: bool = True, **kwargs) -> str:
     """Stylish success log.
 
     Args:
         msg (str): The message to log.
         dump (bool): The dump flag. Defaults to True.
+        prefix (bool): The prefix flag. Defaults to True.
     """
-    slog(msg, style="GREEN", dump=dump)
+    if prefix:
+        msg = f"[SUCCESS] {msg}"
+    return slog(msg, style="OKBLUE", dump=dump, **kwargs)
 
 
-def log_error(msg: str, dump: bool = False) -> None:
+def log_error(
+    msg: str,
+    dump: bool = False,
+    prefix: bool = True,
+    exc_info: Exception | None = None,
+    **kwargs,
+) -> str:
     """Stylish error log.
 
     Args:
         msg (str): The message to log.
         dump (bool): The dump flag. Defaults to True.
     """
-    slog(msg, style="TOMATO", level="error", dump=dump)
+    if prefix:
+        msg = f"[FAILED] {msg}"
+    return slog(
+        msg, style="TOMATO", level="error", dump=dump, exc_info=exc_info, **kwargs
+    )
 
 
-def log_warning(msg: str, dump: bool = False) -> None:
+def log_warning(msg: str, dump: bool = False, prefix: bool = True, **kwargs) -> str:
     """Stylish warning log.
 
     Args:
         msg (str): The message to log.
         dump (bool): The dump flag. Defaults to True.
     """
-    slog(msg, style="GRAPEFRUIT", level="warning", dump=dump)
+    if prefix:
+        msg = f"[WARNING] {msg}"
+    return slog(msg, style="GRAPEFRUIT", level="warning", dump=dump, **kwargs)
 
 
-def log_api(msg: str, error: bool = False) -> None:
+def log_api(msg: str, error: bool = False, **kwargs) -> None:
     """Stylish api log.
 
     Args:
@@ -224,7 +254,17 @@ def log_api(msg: str, error: bool = False) -> None:
         log_success(msg)
 
 
+# Setup default logger
 logger = setup_advanced_logger()
+
+
+# Disable logging for specific modules
+for name in ("elastic_transport.transport", "urllib3.connectionpool", "httpx"):
+    _logger = logging.getLogger(name)
+    _logger.setLevel(logging.ERROR)
+
+# Get tqdm file
+tqdm_file = TqdmLogger()
 
 
 if __name__ == "__main__":

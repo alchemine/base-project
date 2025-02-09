@@ -7,7 +7,7 @@ import contextlib
 from functools import wraps
 from time import perf_counter
 
-from src.core.logger import log_info
+from src.common.logger import slog
 
 
 class Timer(contextlib.ContextDecorator):
@@ -28,7 +28,7 @@ class Timer(contextlib.ContextDecorator):
 
     def __exit__(self, *exc):
         elapsed_time = perf_counter() - self.start_time
-        log_info(f"{'* ' + self.name:15}| {elapsed_time:.2f}s ({elapsed_time/60:.2f}m)")
+        slog(f"{'* ' + self.name:15} | {elapsed_time:.2f}s ({elapsed_time/60:.2f}m)")
         return False
 
 
@@ -39,12 +39,12 @@ def T(fn: callable) -> callable:
         >>> @T
         >>> def f():
         ...     sleep(1)
-        * f()          | 1.00s (0.02m)
+        * Elapsed time | 1.00s (0.02m)
     """
 
     @wraps(fn)
     def _log(*args, **kwargs):
-        with Timer(f"{fn.__name__}()"):
+        with Timer(fn.__name__):
             rst = fn(*args, **kwargs)
         return rst
 

@@ -1,19 +1,16 @@
 """Requests module for handling HTTP requests."""
 
+import asyncio
 from typing import Any
 
+import aiohttp
 import requests
 from requests import Response, RequestException
-import asyncio
-import aiohttp
 
-from src.core.logger import log_api
+from src.common.logger import log_api
 
 
-HEADERS = {
-    "accept": "application/json",
-    "Content-Type": "application/json",
-}
+DEFAULT_HEADERS = {"accept": "application/json", "Content-Type": "application/json"}
 
 
 class APIError(Exception):
@@ -61,7 +58,7 @@ def get_request_log(
     log = dict(
         url=url,
         headers=headers,
-        json=json,
+        json=json,headers
         reproduction_code=f"import requests; requests.post(url='{url}', headers={headers}, json={json})",
     )
 
@@ -73,8 +70,8 @@ def get_request_log(
     return log
 
 
-def safe_post(url: str, json: dict, headers: dict = HEADERS) -> dict:
-    """Requests post with validation.
+def safe_request(url: str, json: dict, headers: dict = DEFAULT_HEADERS) -> dict:
+    """Requests with validation.
 
     Args:
         url (str): The URL of the API.
@@ -86,7 +83,7 @@ def safe_post(url: str, json: dict, headers: dict = HEADERS) -> dict:
     """
     # Check the API communication validness
     try:
-        response = requests.post(url=url, headers=headers, json=json)
+        response = requests.request(url=url, headers=headers, json=json)
         response.raise_for_status()
         log = get_request_log(url, headers, json)
         log_api(log)
@@ -97,42 +94,47 @@ def safe_post(url: str, json: dict, headers: dict = HEADERS) -> dict:
         raise APIError(url, headers, json, response)
 
 
-async def post_request(session: aiohttp.ClientSession, url: str, data: dict) -> list | dict:
+async def async_safe_request(
+    session: aiohttp.ClientSession,
+    url: str,
+    data: dict,
+    headers: dict = DEFAULT_HEADERS,
+) -> list | dict:
     """Post request using aiohttp.
 
     Args:
         session (aiohttp.ClientSession): aiohttp session.
         url (str): URL to post.
         data (dict): Data to post.
+        headers (dict): The headers of the API.
 
     Returns:
         list | dict: Response data.
     """
     async with session.post(
         url=url,
-        headers=HEADERS,
+        headers=headers,
         json=data,
     ) as response:
         response.raise_for_status()
         return await response.json()
 
 
-async def async_post(url: str, batch: list[dict]) -> list[Any]:
+async def async_safe_requests(batch: list[dict]) -> list[Any]:
     """Post requests asynchronously.
 
     Args:
-        url (str): URL to post.
         batch (list[dict]): List of data to post.
 
     Returns:
         list[Any]: List of response data.
-    
+
     Examples:
         import asyncio
-        asyncio.run(async_post(url, batch))
+        asyncio.run(async_safe_requests(batch))
     """
     async with aiohttp.ClientSession() as session:
-        futures = [post_request(session, url, data) for data in batch]
+        futures = [post_request(session, **input) for input in batch]
         responses = await asyncio.gather(*futures)
     return responses
 
@@ -140,4 +142,4 @@ async def async_post(url: str, batch: list[dict]) -> list[Any]:
 if __name__ == "__main__":
     url = "https://httpbin.org/post"
     json = {"key": "value"}
-    response = safe_post(url, json)
+    response = safe_request(url, json)

@@ -5,7 +5,7 @@ Commonly used functions and classes are here.
 
 from datetime import datetime
 
-from src.core.logger import log_info
+from src.common.logger import log_info
 
 
 vars_ = lambda obj: {k: v for k, v in vars(obj).items() if not k.startswith("__")}

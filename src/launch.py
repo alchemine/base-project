@@ -1,10 +1,12 @@
-from src.core import D, T
-
 from time import sleep
+
+from src.common.timer import T
+from src.common.depth_logging import D
 
 
 @D
 def main():
+
     main1()
     main2()
 

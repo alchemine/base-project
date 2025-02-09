@@ -7,8 +7,8 @@ import contextlib
 from collections import defaultdict
 from functools import wraps
 
-from src.core.timer import Timer
-from src.core.logger import log_info
+from src.common.timer import Timer
+from src.common.logger import slog
 
 
 class DepthManager(contextlib.ContextDecorator):
@@ -62,7 +62,7 @@ def D(fn):
             args[0], object
         ):  # if function is method or main function
             logs = f"{logs}{fn.__module__.split('.')[-1]}."
-        log_info(f"{logs}{fn.__name__}()")
+        slog(f"{logs}{fn.__name__}()")
 
     @wraps(fn)
     def _log(*args, **kwargs):
