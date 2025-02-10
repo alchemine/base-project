@@ -15,7 +15,10 @@ ENV TZ=Asia/Seoul
 RUN ln -snf /usr/share/zoneinfo/Asia/Seoul /etc/localtime
 
 # Create non-root user
-RUN useradd -ms /bin/bash appuser
+ARG UID=1000
+ARG GID=1000
+RUN groupadd -g ${GID} appuser && \
+    useradd -u ${UID} -g ${GID} -ms /bin/bash appuser
 
 # Install system dependencies
 RUN apt-get update -qqy && \
@@ -41,8 +44,11 @@ COPY src ${PROJECT_ROOT}/src
 RUN chown -R appuser:appuser ${PROJECT_ROOT}
 USER appuser
 
-# FastAPI port
+# FastAPI
 # EXPOSE 8000
+
+# Streamlit
+# EXPOSE 8501
 
 # Run the application
 # CMD ["python", "/app/app/main.py"]
