@@ -7,8 +7,6 @@ from pathlib import Path
 import logging
 from logging.handlers import TimedRotatingFileHandler
 
-from config import ENV
-
 
 # https://pkg.go.dev/github.com/shafiqaimanx/pastax/colors
 STYLES = {
@@ -162,13 +160,7 @@ def slog(
     except:
         pass
 
-    if ENV in ("dev", "prd"):
-        stylish_msg = msg
-    elif style:
-        stylish_msg = f"{STYLES['BOLD']}{STYLES[style]}{msg}{STYLES['ENDC']}"
-    else:
-        stylish_msg = msg
-
+    stylish_msg = f"{STYLES['BOLD']}{STYLES[style]}{msg}{STYLES['ENDC']}"
     match level:
         case "info":
             logger.info(stylish_msg, **kwargs)
