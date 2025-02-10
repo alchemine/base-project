@@ -58,7 +58,7 @@ def get_request_log(
     log = dict(
         url=url,
         headers=headers,
-        json=json,headers
+        json=json,
         reproduction_code=f"import requests; requests.post(url='{url}', headers={headers}, json={json})",
     )
 
@@ -83,7 +83,7 @@ def safe_request(url: str, json: dict, headers: dict = DEFAULT_HEADERS) -> dict:
     """
     # Check the API communication validness
     try:
-        response = requests.request(url=url, headers=headers, json=json)
+        response = requests.post(url=url, headers=headers, json=json)
         response.raise_for_status()
         log = get_request_log(url, headers, json)
         log_api(log)
@@ -134,7 +134,7 @@ async def async_safe_requests(batch: list[dict]) -> list[Any]:
         asyncio.run(async_safe_requests(batch))
     """
     async with aiohttp.ClientSession() as session:
-        futures = [post_request(session, **input) for input in batch]
+        futures = [async_safe_request(session, **input) for input in batch]
         responses = await asyncio.gather(*futures)
     return responses
 
