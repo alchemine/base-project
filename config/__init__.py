@@ -1,7 +1,7 @@
 """Configuration constants for the project."""
 
 from os import environ
-from os.path import join, exists
+from os.path import join, exists, abspath, dirname
 
 import yaml
 from easydict import EasyDict
@@ -24,7 +24,8 @@ ENV = environ.get("ENV", "dev")
 ##################################################
 # PATH
 ##################################################
-CONFIG_DIR = "config"
+ROOT_DIR = abspath(dirname(dirname(__file__)))
+CONFIG_DIR = join(ROOT_DIR, "config")
 SERVICE_CONFIG_PATH = join(CONFIG_DIR, "service.yaml")
 if not exists(SERVICE_CONFIG_PATH):
     SERVICE_CONFIG_PATH = join(CONFIG_DIR, "service.dev.yaml")
