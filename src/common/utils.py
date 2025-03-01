@@ -27,11 +27,11 @@ def lmap(fn: callable, arr: list, scheduler: str | None = None) -> list:
     Returns:
         list: List of results
     """
-    from dask import delayed, compute
-
     if scheduler is None:
         return list(map(fn, arr))
     else:
+        from dask import delayed, compute
+
         assert scheduler in [
             "single-threaded",
             "threads",
