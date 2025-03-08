@@ -1,0 +1,7 @@
+inference:
+  llm:
+    model: gpt-4o-mini
+    use_proxy: false
+
+  proxy:
+    base_url: http://0.0.0.0:4000
