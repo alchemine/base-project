@@ -7,7 +7,7 @@ import contextlib
 from functools import wraps
 from time import perf_counter
 
-from src.core.logger import log_success, log_info
+from src.common.logger import log_success, log_info
 
 
 class Timer(contextlib.ContextDecorator):
