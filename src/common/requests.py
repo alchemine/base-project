@@ -3,9 +3,10 @@
 import asyncio
 from typing import Any
 
-import aiohttp
 import requests
-from requests import Response, RequestException
+from requests import Response, HTTPError
+import aiohttp
+from aiohttp import ClientResponse, ClientResponseError
 
 from src.common.logger import log_api
 
@@ -42,7 +43,10 @@ requests.post(
 
 
 def get_request_log(
-    url: str, headers: dict, json: dict, response: Response | None = None
+    url: str,
+    headers: dict,
+    json: dict,
+    response: Response | ClientResponse | None = None,
 ) -> dict:
     """Get the request log.
 
@@ -85,13 +89,13 @@ def safe_request(url: str, json: dict, headers: dict = DEFAULT_HEADERS) -> dict:
     try:
         response = requests.post(url=url, headers=headers, json=json)
         response.raise_for_status()
-        log = get_request_log(url, headers, json)
+        log = get_request_log(url, headers, json, response)
         log_api(log)
         return response.json()
-    except RequestException as e:
+    except HTTPError:
         log = get_request_log(url, headers, json)
         log_api(log, error=True)
-        raise APIError(url, headers, json, response)
+        raise
 
 
 async def async_safe_request(
@@ -116,8 +120,15 @@ async def async_safe_request(
         headers=headers,
         json=data,
     ) as response:
-        response.raise_for_status()
-        return await response.json()
+        try:
+            response.raise_for_status()
+            log = get_request_log(url, headers, data, response)
+            log_api(log)
+            return await response.json()
+        except ClientResponseError:
+            log = get_request_log(url, headers, data)
+            log_api(log, error=True)
+            raise
 
 
 async def async_safe_requests(batch: list[dict]) -> list[Any]:
