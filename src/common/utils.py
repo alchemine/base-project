@@ -13,7 +13,7 @@ from abc import ABCMeta, abstractmethod
 #     tabulate(dic, headers="keys", tablefmt="psql")
 # )  # print with fancy 'psql' format
 vars_ = lambda obj: {k: v for k, v in vars(obj).items() if not k.startswith("__")}
-str2dt = lambda s, format="%Y-%m-%d": datetime.datetime.strptime(s, format)
+str2dt = lambda s, format="%Y-%m-%d": datetime.strptime(s, format)
 dt2str = lambda dt, format="%Y-%m-%d": dt.strftime(format)
 
 
