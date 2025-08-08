@@ -80,8 +80,10 @@
    출력:
 
    ```
-   * Task 1        | 1.00s (0.02m)
-   * fn2()         | 1.00s (0.02m)
+   2025-08-09 00:19:37 | service_name | INFO     | [START]   Task 1
+   2025-08-09 00:19:38 | service_name | INFO     | [SUCCESS] Task 1 (0.02m)
+   2025-08-09 00:19:38 | service_name | INFO     | [START]   fn2
+   2025-08-09 00:19:39 | service_name | INFO     | [SUCCESS] fn2 (0.02m)
    ```
 
 ### 2.2 Depth logging
@@ -123,18 +125,18 @@ main()
 출력:
 
 ```
-  1            | main()
-  1.1          | main1()
-  1.1.1        | main11()
-* 1.1.1        | 0.00s (0.00m)
-  1.1.2        | main12()
-* 1.1.2        | 0.00s (0.00m)
-* 1.1          | 0.00s (0.00m)
-  1.2          | main2()
-  1.2.1        | main21()
-* 1.2.1        | 0.00s (0.00m)
-* 1.2          | 0.00s (0.00m)
-*  1           | 0.00s (0.00m)
+2025-08-09 00:03:53 | service_name | INFO     | [START]   1.1              | main()
+2025-08-09 00:03:53 | service_name | INFO     | [START]   1.1.1            | main1()
+2025-08-09 00:03:53 | service_name | INFO     | [START]   1.1.1.1          | main11()
+2025-08-09 00:03:53 | service_name | INFO     | [SUCCESS] 1.1.1.1          | main11() (0.00m)
+2025-08-09 00:03:53 | service_name | INFO     | [START]   1.1.2.1          | main12()
+2025-08-09 00:03:53 | service_name | INFO     | [SUCCESS] 1.1.2.1          | main12() (0.00m)
+2025-08-09 00:03:53 | service_name | INFO     | [SUCCESS] 1.1.1            | main1() (0.00m)
+2025-08-09 00:03:53 | service_name | INFO     | [START]   1.2.1            | main2()
+2025-08-09 00:03:53 | service_name | INFO     | [START]   1.2.1.1          | main21()
+2025-08-09 00:03:53 | service_name | INFO     | [SUCCESS] 1.2.1.1          | main21() (0.00m)
+2025-08-09 00:03:53 | service_name | INFO     | [SUCCESS] 1.2.1            | main2() (0.00m)
+2025-08-09 00:03:53 | service_name | INFO     | [SUCCESS] 1.1              | main() (0.00m)
 ```
 
 ### 2.3 Logging
