@@ -1,8 +1,26 @@
-
-
 # base-project: Basic Project Environment for Python Development
 
 This project aims to build a Python project environment based on various useful tools.
+
+## 0. Quickstart
+
+- Install dependencies (runtime + tests)
+  ```bash
+  conda create -n base-project python=3.12 -y
+  conda activate base-project
+  pip install -r requirements.txt -r tests/requirements.txt
+  ```
+- Run tests
+  ```bash
+  pytest -q
+  ```
+- Run application (FastAPI)
+  ```bash
+  python -m app.main
+  # or
+  uvicorn app:application --host 0.0.0.0 --port 8000 --reload
+  ```
+  - Open `http://localhost:8000/docs` in your browser
 
 ## 1. Development Environment
 
@@ -11,7 +29,7 @@ To provide a consistent development experience across different platforms, I hav
 - **Dev Container**: Utilizes Visual Studio Code's Dev Containers to provide a consistent development environment.
   - Configuration file: `.devcontainer/devcontainer.json`
 - **Docker**: Supports containerization for deployment and testing.
-  - Configuration file: `Dockerfile`
+  - Configuration files: `Dockerfile`, `docker-compose.yml`
 - **Python**:
   - Project configuration: `pyproject.toml`
   - Dependency management: `requirements.txt`
@@ -27,7 +45,8 @@ Provides functionality to measure code execution time.
 1. **Context manager**
 
    ```python
-   from src.common import Timer
+   from time import sleep
+   from src.common.timer import Timer
 
    with Timer("Task 1"):
        # Here is code snippet
@@ -37,13 +56,14 @@ Provides functionality to measure code execution time.
    Output:
 
    ```
-   * Task 1    | 1.00s (0.02m)
+   * Task 1        | 1.00s (0.02m)
    ```
 
 2. **Decorator**
 
    ```python
-   from src.common import Timer, T
+   from time import sleep
+   from src.common.timer import Timer, T
 
    @Timer("Task 1")
    def fn1():
@@ -60,8 +80,8 @@ Provides functionality to measure code execution time.
    Output:
 
    ```
-   * Task 1     | 1.00s (0.02m)
-   * fn2()      | 1.00s (0.02m)
+   * Task 1        | 1.00s (0.02m)
+   * fn2()         | 1.00s (0.02m)
    ```
 
 ### 2.2 Depth logging
@@ -69,7 +89,7 @@ Provides functionality to measure code execution time.
 Provides functionality to visualize the function call stack and measure execution time.
 
 ```python
-from src.common import D
+from src.common.depth_logging import D
 
 @D
 def main():
@@ -114,7 +134,7 @@ Output:
   1.2.1        | main21()
 * 1.2.1        | 0.00s (0.00m)
 * 1.2          | 0.00s (0.00m)
-* 1            | 0.00s (0.00m)
+*  1           | 0.00s (0.00m)
 ```
 
 ### 2.3 Logging
@@ -124,8 +144,15 @@ Logs are saved in the `logs/YYYY-MM-DD.log` file for easy tracking and debugging
 Utility functions allow for easy use.
 
 ```python
-from src.common import slog, log_info, log_success, log_error, log_warning, log_api
-from src.common.logger import STYLES
+from src.common.logger import (
+    slog,
+    log_info,
+    log_success,
+    log_error,
+    log_warning,
+    log_api,
+    STYLES,
+)
 
 log_info("This is an info message.")
 log_success("This is a success message.")
@@ -140,16 +167,35 @@ for style in STYLES:
 
 ### 2.4 Safe HTTP requests
 
-Allows for safe HTTP requests (`requests.post`) including error handling and logging.
+Allows for safe HTTP requests with error handling and logging.
+
+Synchronous:
 
 ```python
-from src.common.requests import safe_request
+from src.common.request_utils import safe_request
 
 url = "https://httpbin.org/post"
-json = {"key": "value"}
-response = safe_post(url, json)
+payload = {"key": "value"}
+response = safe_request(url, json=payload, method="post")
+```
+
+Asynchronous:
+
+```python
+import aiohttp
+from src.common.request_utils import async_safe_request
+
+async with aiohttp.ClientSession() as session:
+    url = "https://httpbin.org/post"
+    payload = {"key": "value"}
+    response = await async_safe_request(session, url, json=payload, method="post")
 ```
 
 ---
+
+## 3. Playground
+
+- You can find simple validation/demo scripts in the `playground/` directory.
+  - Example: `playground/docs_update-readme/verify_readme_examples.py`
 
 I hope this project helps improve your Python development experience!
