@@ -8,7 +8,7 @@ export GID=$(id -g)
 docker compose -f docker/docker-compose.yml down
 
 # Remove volumes
-docker volume rm inflo-database
+docker volume rm base-database
 
 # Remove network
-docker network rm inflo-network
+docker network rm base-network

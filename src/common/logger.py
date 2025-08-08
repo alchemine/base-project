@@ -2,10 +2,13 @@
 
 import re
 import json
-from datetime import datetime
-from pathlib import Path
 import logging
+from pathlib import Path
+from typing import Literal
+from datetime import datetime
 from logging.handlers import TimedRotatingFileHandler
+
+from config import SERVICE_NAME
 
 
 # https://pkg.go.dev/github.com/shafiqaimanx/pastax/colors
@@ -38,14 +41,14 @@ STYLES = {
 
 # With name version (for debugging)
 LOG_FORMAT = "%(asctime)s | %(name)-12s | %(levelname)-8s | %(message)s"
-# LOG_FORMAT = "%(asctime)s | %(levelname)-8s | %(message)s"
 LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
+ANSI_PATTERN = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
 
 
 class ANSIColorRemovingFormatter(logging.Formatter):
     def format(self, record):
         formatted = super().format(record)
-        return re.sub(r"\x1b\[[0-9;]*m", "", formatted)
+        return ANSI_PATTERN.sub("", formatted)
 
 
 class TqdmLogger:
@@ -56,7 +59,7 @@ class TqdmLogger:
         pass
 
 
-def setup_advanced_logger(
+def build_general_logger(
     logger_name: str = None,
     log_level: str = "INFO",
     log_format: str = LOG_FORMAT,
@@ -140,7 +143,11 @@ def pretty_dict(s: str) -> str:
 
 
 def slog(
-    msg: str, style: str | None = None, level: str = "info", dump: bool = True, **kwargs
+    msg: str,
+    style: str | None = None,
+    level: Literal["info", "error", "warning", "debug"] = "info",
+    dump: bool = True,
+    **kwargs,
 ) -> str:
     """Stylish log message.
 
@@ -160,12 +167,12 @@ def slog(
     except:
         pass
 
-    stylish_msg = f"{STYLES['BOLD']}{STYLES[style]}{msg}{STYLES['ENDC']}"
+    stylish_msg = f"{STYLES['BOLD']}{STYLES.get(style, "")}{msg}{STYLES['ENDC']}"
     match level:
         case "info":
             logger.info(stylish_msg, **kwargs)
         case "error":
-            logger.error(stylish_msg, **kwargs)
+            logger.error(stylish_msg, exc_info=True, **kwargs)
         case "warning":
             logger.warning(stylish_msg, **kwargs)
         case "debug":
@@ -176,13 +183,16 @@ def slog(
     return stylish_msg
 
 
-def log_info(msg: str, dump: bool = True, **kwargs) -> str:
+def log_info(msg: str, dump: bool = True, prefix: str = "", **kwargs) -> str:
     """Stylish info log.
 
     Args:
         msg (str): The message to log.
         dump (bool): The dump flag. Defaults to True.
     """
+    if prefix:
+        prefix = f"[{prefix}]"
+        msg = f"{prefix:9} {msg}"
     return slog(msg, style="GREEN", dump=dump, **kwargs)
 
 
@@ -195,17 +205,12 @@ def log_success(msg: str, dump: bool = True, prefix: bool = True, **kwargs) -> s
         prefix (bool): The prefix flag. Defaults to True.
     """
     if prefix:
-        msg = f"[SUCCESS] {msg}"
+        prefix = "[SUCCESS]"
+        msg = f"{prefix:9} {msg}"
     return slog(msg, style="OKBLUE", dump=dump, **kwargs)
 
 
-def log_error(
-    msg: str,
-    dump: bool = False,
-    prefix: bool = True,
-    exc_info: Exception | None = None,
-    **kwargs,
-) -> str:
+def log_error(msg: str, dump: bool = False, prefix: bool = True, **kwargs) -> str:
     """Stylish error log.
 
     Args:
@@ -213,10 +218,9 @@ def log_error(
         dump (bool): The dump flag. Defaults to True.
     """
     if prefix:
-        msg = f"[FAILED] {msg}"
-    return slog(
-        msg, style="TOMATO", level="error", dump=dump, exc_info=exc_info, **kwargs
-    )
+        prefix = "[FAILED]"
+        msg = f"{prefix:9} {msg}"
+    return slog(msg, style="TOMATO", level="error", dump=dump, **kwargs)
 
 
 def log_warning(msg: str, dump: bool = False, prefix: bool = True, **kwargs) -> str:
@@ -227,7 +231,8 @@ def log_warning(msg: str, dump: bool = False, prefix: bool = True, **kwargs) -> 
         dump (bool): The dump flag. Defaults to True.
     """
     if prefix:
-        msg = f"[WARNING] {msg}"
+        prefix = "[WARNING]"
+        msg = f"{prefix:9} {msg}"
     return slog(msg, style="GRAPEFRUIT", level="warning", dump=dump, **kwargs)
 
 
@@ -247,7 +252,7 @@ def log_api(msg: str, error: bool = False, **kwargs) -> None:
 
 
 # Setup default logger
-logger = setup_advanced_logger()
+logger = build_general_logger(SERVICE_NAME)
 
 
 # Disable logging for specific modules

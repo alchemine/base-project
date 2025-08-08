@@ -1,29 +1,25 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 
-from app.models.chat import ChatRequest, ChatResponse
+from app.models.chat import CompletionsRequest, CompletionsResponse
 from src.common.logger import log_error
 
-router = APIRouter()
+
+router = APIRouter(tags=["chat"])
 
 
 @router.post(
     "/completions",
-    response_model=ChatResponse,
+    response_model=CompletionsResponse,
     description="Chat",
-    tags=["chat"],
 )
-def completions(request: ChatRequest) -> ChatResponse:
+async def completions(
+    fastapi_request: Request, request: CompletionsRequest
+) -> CompletionsResponse:
     try:
-        message = "무엇을 도와드릴까요?"
-        result = ChatResponse(success=True, data={"message": message})
+        qa_agent = fastapi_request.app.state.qa_agent
+        data = await qa_agent.ainvoke(request.query, request.user_id)
+        result = CompletionsResponse(success=True, data=data)
     except Exception as e:
-        error_message = f"Failed to chat: {e}"
-        log_error(error_message, exc_info=e)
-        result = ChatResponse(
-            success=False,
-            data={
-                "message": "죄송합니다. 문제가 발생했습니다.",
-                "error": error_message,
-            },
-        )
+        log_error("Unexpected error occurred.")
+        result = CompletionsResponse(success=False, message=str(e))
     return result

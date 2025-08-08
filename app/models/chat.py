@@ -1,41 +1,49 @@
-from app.models.base import BaseRequest, BaseResponse
+"""Chat Models"""
+
+from pydantic import BaseModel
+
+from app.models.base import BaseResponse
 
 
-########################################################
+############################################################
 # Requests
-########################################################
-class ChatRequest(BaseRequest):
+############################################################
+class CompletionsRequest(BaseModel):
     query: str
+    user_id: str
 
     model_config = {
         "json_schema_extra": {
             "examples": [
                 {
-                    "query": "안녕",
+                    "query": "안녕하세요!",
+                    "user_id": "test",
                 }
             ]
         }
     }
 
 
-########################################################
+############################################################
 # Responses
-########################################################
-class ChatResponse(BaseResponse):
-    data: dict
+############################################################
+class CompletionsResponse(BaseResponse):
+    data: dict | None = None
 
     model_config = {
         "json_schema_extra": {
             "examples": [
                 {
                     "success": True,
-                    "data": {"message": "무엇을 도와드릴까요?"},
+                    "data": {
+                        "response": "네 반갑습니다!",
+                        "context": [],
+                    },
                 },
                 {
                     "success": False,
-                    "data": {"message": "에러가 발생했습니다.", "error": "..."},
-                }
-
+                    "message": "ValueError: ...",
+                },
             ]
         }
     }

@@ -2,11 +2,15 @@
 FROM python:3.12-slim-bookworm
 
 # Development(dev) or production(prd) image
-ARG ENV=dev
+ARG ENV="dev"
 ENV ENV=${ENV}
+ARG SERVICE_NAME="service_name"
+ENV SERVICE_NAME=${SERVICE_NAME}
+ARG SERVICE_VERSION="0.0.1"
+ENV SERVICE_VERSION=${SERVICE_VERSION}
 
 # Set project directory
-ENV PROJECT_ROOT=/app
+ENV PROJECT_ROOT="/app"
 ENV PYTHONPATH=${PROJECT_ROOT}
 WORKDIR ${PROJECT_ROOT}
 
@@ -44,11 +48,8 @@ COPY src ${PROJECT_ROOT}/src
 RUN chown -R appuser:appuser ${PROJECT_ROOT}
 USER appuser
 
-# FastAPI
-# EXPOSE 8000
-
-# Streamlit
-# EXPOSE 8501
+# Expose ports
+EXPOSE 8000
 
 # Run the application
-# CMD ["python", "/app/app/main.py"]
+CMD ["python", "/app/app/main.py"]

@@ -4,49 +4,17 @@ Commonly used functions and classes are here.
 """
 
 from datetime import datetime
+from abc import ABCMeta, abstractmethod
 
-from src.common.logger import log_info
+# from tabulate import tabulate
 
 
+# tprint = lambda dic: print(
+#     tabulate(dic, headers="keys", tablefmt="psql")
+# )  # print with fancy 'psql' format
 vars_ = lambda obj: {k: v for k, v in vars(obj).items() if not k.startswith("__")}
-str2dt = lambda s, format="%Y-%m-%d": datetime.strptime(s, format)
+str2dt = lambda s, format="%Y-%m-%d": datetime.datetime.strptime(s, format)
 dt2str = lambda dt, format="%Y-%m-%d": dt.strftime(format)
-
-
-def lmap(fn: callable, arr: list, scheduler: str | None = None) -> list:
-    """List map.
-
-    Args:
-        fn (callable): Function to apply
-        arr (list): List to apply function
-        scheduler (str, optional): Dask scheduler. Defaults to None.
-            - None | "single-threaded": Single-threaded
-            - "threads": Multi-threaded
-            - "processes": Multi-process
-
-    Returns:
-        list: List of results
-    """
-    if scheduler is None:
-        return list(map(fn, arr))
-    else:
-        from dask import delayed, compute
-
-        assert scheduler in [
-            "single-threaded",
-            "threads",
-            "processes",
-        ], f"Invalid scheduler: {scheduler}"
-        tasks = (delayed(fn)(e) for e in arr)
-        return list(compute(*tasks, scheduler=scheduler))
-
-
-def tprint(dic: dict) -> None:
-    """Table print."""
-    import tabulate
-
-    # print with fancy 'psql' format
-    log_info(tabulate(dic, headers="keys", tablefmt="psql"))
 
 
 def str2bool(s: str | bool) -> bool:
@@ -61,20 +29,38 @@ def str2bool(s: str | bool) -> bool:
         raise ValueError(f"Invalid input: {s} (type: {type(s)})")
 
 
-class MetaSingleton(type):
-    """Meta singleton.
+##################################################
+# Singleton
+##################################################
+class SingletonBase(metaclass=ABCMeta):
+    """Singleton base class.
 
     Example:
-        >>> class A(metaclass=MetaSingleton):
-        ...     pass
-        >>> a1 = A()
-        >>> a2 = A()
-        >>> assert a1 is a2
+        class LLMManager(SingletonBase):
+            @classmethod
+            def _generate_instance_key(cls, model_name: str, provider: str) -> tuple:
+                return (model_name, provider)
+
+            def _init_once(self, model_name: str, provider: str) -> None:
+                self.model_name = model_name
+                self.provider = provider
     """
 
+    _init = set()
     _instances = {}
 
-    def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            cls._instances[cls] = super(MetaSingleton, cls).__call__(*args, **kwargs)
-        return cls._instances[cls]
+    def __new__(cls, *args, **kwargs):
+        instance_key = cls._generate_instance_key(*args, **kwargs)
+        if instance_key not in cls._instances:
+            instance = super().__new__(cls)
+            cls._instances[instance_key] = instance
+            instance._init_once(*args, **kwargs)
+            cls._init.add(instance_key)
+        return cls._instances[instance_key]
+
+    @classmethod
+    @abstractmethod
+    def _generate_instance_key(cls, *args, **kwargs) -> tuple: ...
+
+    @abstractmethod
+    def _init_once(self, *args, **kwargs): ...

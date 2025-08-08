@@ -7,7 +7,7 @@ import contextlib
 from functools import wraps
 from time import perf_counter
 
-from src.common.logger import log_success, log_info
+from src.common.logger import log_info, log_success
 
 
 class Timer(contextlib.ContextDecorator):
@@ -23,13 +23,13 @@ class Timer(contextlib.ContextDecorator):
         self.name = name
 
     def __enter__(self):
-        log_info(f"{'[START] ' + self.name:15}")
+        log_info(f"{self.name:20}", prefix="START")
         self.start_time = perf_counter()
         return self
 
     def __exit__(self, *exc):
         elapsed_time = perf_counter() - self.start_time
-        log_success(f"{self.name:15} | {elapsed_time:.2f}s ({elapsed_time/60:.2f}m)")
+        log_success(f"{self.name} ({elapsed_time/60:.2f}m)")
         return False
 
 

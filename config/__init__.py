@@ -37,6 +37,8 @@ ENGINE_CONFIG_PATH = join(CONFIG_DIR, "engine.yaml")
 ##################################################
 CFG_SERVICE = load_yaml(SERVICE_CONFIG_PATH)
 CFG_ENGINE = load_yaml(ENGINE_CONFIG_PATH)
+SERVICE_NAME = environ.get("SERVICE_NAME", "service_name")
+SERVICE_VERSION = environ.get("SERVICE_VERSION", "service_version")
 
 
 if __name__ == "__main__":

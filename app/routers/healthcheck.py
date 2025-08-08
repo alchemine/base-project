@@ -2,10 +2,10 @@
 
 from fastapi import APIRouter
 
-router = APIRouter()
+
+router = APIRouter(tags=["healthcheck"])
 
 
-@router.get("", tags=["healthcheck"])
+@router.get("")
 def healthcheck():
-    msg = "OK"
-    return {"success": True, "message": msg}
+    return {"status": "success"}

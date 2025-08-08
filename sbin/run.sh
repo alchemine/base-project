@@ -5,10 +5,10 @@ export UID=$(id -u)
 export GID=$(id -g)
 
 # Create network
-docker network create inflo-network
+docker network create base-network
 
 # Create volumes
-docker volume create inflo-database
+docker volume create base-database
 
 # Run docker compose
 docker compose -f docker/docker-compose.yml up -d --build
